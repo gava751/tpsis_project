@@ -1,0 +1,12 @@
+{
+  "manager": {
+    "password_hash": "6ee4a469cd4e91053847f5d3fcb61dbcc91e8f0ef10be7748da4c4a1ba382d17",
+    "role": "manager",
+    "full_name": "Михайловский Е.В. (категорийный менеджер)"
+  },
+  "analyst": {
+    "password_hash": "f44ceb062e35dfeea6ed7f8524d53bb0bff19f553e25cae7ef4850e4185ccbba",
+    "role": "analyst",
+    "full_name": "Руководитель отдела аналитики"
+  }
+}
