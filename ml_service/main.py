@@ -73,8 +73,11 @@ def forecast(request: ForecastRequest) -> ForecastResponse:
     frame.to_csv(HISTORY_CACHE, index=False)
 
     model = registry.load_latest()
-    if model is None:
-        logger.info("Активная модель отсутствует – выполняется обучение на истории")
+    meta = registry.latest_meta()
+    if model is None or meta.trained_rows != len(frame):
+        # Модель отсутствует либо состав исторических данных изменился
+        # (появились новые товары/категории) – выполняется дообучение
+        logger.info("Обучение модели на %d строках истории", len(frame))
         meta = train_model(frame, registry)
         logger.info("Обучена модель %s (MAPE=%.4f)", meta.version, meta.mape)
         model = registry.load_latest()

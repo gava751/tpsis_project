@@ -8,7 +8,8 @@ from __future__ import annotations
 import logging
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.controller import (
     analytics_controller,
@@ -18,6 +19,7 @@ from app.controller import (
     model_controller,
     promo_controller,
 )
+from app.core.config import BASE_DIR
 from app.core.di import get_engine
 from app.core.errors import AppError
 from app.core.database import Base
@@ -65,3 +67,22 @@ def on_startup() -> None:
 @app.get("/api/v1/health", tags=["Служебные"])
 def health() -> dict:
     return {"status": "ok", "service": "server_app"}
+
+
+# ---------------------------------------------------------------------------
+# Раздача пользовательского интерфейса (SPA React/TypeScript, ЛР6).
+# Собранная сборка web_client/dist отдается тем же процессом Uvicorn,
+# что позволяет демонстрировать систему без отдельного веб-сервера.
+_web_dist = BASE_DIR / "web_client" / "dist"
+if _web_dist.exists():
+    assets = _web_dist / "assets"
+    if assets.exists():
+        app.mount("/assets", StaticFiles(directory=assets), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_entry(full_path: str) -> FileResponse:
+        """SPA-маршрутизация: неизвестные пути отдают index.html (client-side routing)."""
+        candidate = _web_dist / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_web_dist / "index.html")

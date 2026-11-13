@@ -80,6 +80,7 @@ def train_model(frame: pd.DataFrame, registry: ModelRegistry,
         mape=round(mape, 4),
         wape=round(wape, 4),
         iterations=int(model.get_param("iterations")),
+        trained_rows=int(len(frame)),
     )
     registry.save(model, meta)
     logger.info("Обучена модель %s: MAPE=%.4f, WAPE=%.4f", meta.version, mape, wape)

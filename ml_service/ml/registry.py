@@ -21,6 +21,7 @@ class ModelMeta:
     mape: float
     wape: float
     iterations: int
+    trained_rows: int = 0
 
 
 class ModelRegistry:
@@ -56,18 +57,19 @@ class ModelRegistry:
         latest = items[-1]
         return joblib.load(self._dir / latest["file"])
 
+    @staticmethod
+    def _to_meta(item: dict) -> ModelMeta:
+        return ModelMeta(**{
+            key: value for key, value in item.items()
+            if key != "file" and key in ModelMeta.__dataclass_fields__
+        })
+
     def latest_meta(self) -> ModelMeta | None:
         items = self._read_all()
         if not items:
             return None
-        latest = items[-1]
-        latest.pop("file", None)
-        return ModelMeta(**latest)
+        return self._to_meta(items[-1])
 
     def list_meta(self) -> list[ModelMeta]:
-        items = self._read_all()
-        items.reverse()
-        return [
-            ModelMeta(**{k: v for k, v in item.items() if k != "file"})
-            for item in items
-        ]
+        items = list(reversed(self._read_all()))
+        return [self._to_meta(item) for item in items]
